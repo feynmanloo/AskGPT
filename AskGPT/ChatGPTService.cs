@@ -6,18 +6,20 @@ namespace OpenAI.ChatGPT;
 public class ChatGPTService
 {
     readonly string apiKey;
+    readonly string host;
     readonly HttpClient httpClient;
 
-    public ChatGPTService(string apiKey, HttpClient httpClient)
+    public ChatGPTService(HttpClient httpClient, string apiKey, string host = "https://api.openai.com")
     {
-        this.apiKey = apiKey;
         this.httpClient = httpClient;
+        this.host = host;
+        this.apiKey = apiKey;
     }
 
     public HttpRequestMessage CreateHttpRequest(Request requestData)
     {
         var requestJson = JsonSerializer.Serialize(requestData);
-        var request = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/chat/completions");
+        var request = new HttpRequestMessage(HttpMethod.Post, $"{host.TrimEnd('/')}/v1/chat/completions");
         request.Headers.Add("Authorization", $"Bearer {apiKey}");
         request.Content = new StringContent(requestJson, System.Text.Encoding.UTF8, "application/json");
         return request;

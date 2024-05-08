@@ -15,6 +15,7 @@ string configDir = Path.Combine(homeDir, ".config", "AskGPT");
 Directory.CreateDirectory(configDir);
 
 string apiKeyPath = Path.Combine(configDir, "apikey.txt");
+string hostPath = Path.Combine(configDir, "host.txt");
 string initialPromptPath = Path.Combine(configDir, "prompt.json");
 string historyPath = Path.Combine(configDir, "history.jsonl");
 string configFilePath = Path.Combine(configDir, "config.json");
@@ -30,7 +31,15 @@ if (!File.Exists(apiKeyPath))
     Error($"No API key found. Please put your API key in a file located at:\n\n{apiKeyPath}\n\nYou can get your API key from:\n\nhttps://platform.openai.com/account/api-keys\n");
 }
 string apiKey = (await File.ReadAllTextAsync(apiKeyPath)).Trim();
-
+string host = "";
+if (File.Exists(hostPath))
+{
+    host = (await File.ReadAllTextAsync(hostPath)).Trim().TrimEnd('/');
+}
+if(string.IsNullOrWhiteSpace(host))
+{
+    host = "https://api.openai.com";
+}
 //
 // Load the config file
 //
@@ -162,7 +171,7 @@ var requestData = new Request()
 // Make the request
 //
 var http = new HttpClient();
-var service = new OpenAI.ChatGPT.ChatGPTService(apiKey, http);
+var service = new OpenAI.ChatGPT.ChatGPTService(http, apiKey, host);
 var request = service.CreateHttpRequest(requestData);
 var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 if (!response.IsSuccessStatusCode)
